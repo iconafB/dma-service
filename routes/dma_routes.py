@@ -102,6 +102,7 @@ async def upload_data_for_dma(id_numbers:str=Query(description="Optional paramet
             session.add(data_object)
             session.commit()
             session.refresh(data_object)
+            
             #dump the id on the db
             return data_object
        
@@ -128,13 +129,12 @@ async def check_dedupe_status(audit_id:str=Path(description="Please provide an a
     if dma_response.status_code == 200 and dma_response.json()['Status']=='Download Ready':
         #send an email when the files are ready 
         records_dma_class=dma_check_status(Status=dma_response.json()['Status'],NotificationEmail=dma_record.notication_email,ErrorMessage=dma_response.json()['ErrorMessage'],UploadDate=dma_response.json()['UploadDate'],FileName=dma_response.json()['FileName'],FileType=dma_response.json()['FileType'],TotalRecords=dma_response.json()['TotalRecords'])
-        
+        #
         return records_dma_class
     
     elif dma_response.status_code == 200 and dma_response.json()['Status']!="Download Ready":
         #send an email that a dedupe is not ready
         records_dma_class=dma_check_status(Status=dma_response.json()['Status'],NotificationEmail=dma_record.notication_email,ErrorMessage=dma_response.json()['ErrorMessage'],UploadDate=dma_response.json()['UploadDate'],FileName=dma_response.json()['FileName'],FileType=dma_response.json()['FileType'],TotalRecords=dma_response.json()['TotalRecords'])
-        
         return records_dma_class
     
     else: 
@@ -177,13 +177,13 @@ async def read_dedupe_output(audit_id:str,session:Session=Depends(get_session),d
         #refresh the session object
         session.refresh(list_to_insert)
         # return the refreshed session object
+        
         return list_to_insert
     
+
     elif len(response_record.json()['Errors'])!=0 and response_record.status_code!=200:
         #return a list of errors
         return response_record.json()['Errors']
-    
-    
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="An internal server error occurred")
     

@@ -1,9 +1,13 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from routes.dma_routes import dma_routes
 from database.database import create_db_and_tables
 
 #this will not happen here but in another service
 #schedule the credits checks to run everyday in the morning
+
+
 
 app=FastAPI(
     title="DMA SERVICE",
@@ -11,10 +15,16 @@ app=FastAPI(
     description="This DMA service will interact with the DMASA API. The DMA service main functions is to check dma credits, upload data for deduping,check dedupe status and read dedupe output. The check credits functionality is automated and update the frontend about the remaining number of credits.The upload data for deduping functionality will upload files to dmasa and the dedupe status will be continuously checked against a dmasa endpoint. Finally the files are read from the dmasa api endpoint provided they have been deduped successfully."
 )
 
+
+origins=["http://localhost:5173"]
+
+app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=True,allow_methods=["*"],allow_headers=["*"])
+
 @app.get("/dma")
 
 async def dma_main():
     return {"main":"main dna service test endpoint"}
+
 
 @app.get("/health-check")
 

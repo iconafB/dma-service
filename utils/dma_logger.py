@@ -4,9 +4,11 @@ from pathlib import Path
 from logging.handlers import RotatingFileHandler
 
 def define_logger(name:str,log_file:str=None)->logging.Logger:
+
     """
         log handler for console and file logs
     """
+    
     # create the logger
     logger=logging.getLogger(name)
     #set the logger level
@@ -19,6 +21,7 @@ def define_logger(name:str,log_file:str=None)->logging.Logger:
     console_handler.setLevel(logging.INFO)
     #Create console handler and set level
     #Create log formatters
+
     file_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
@@ -27,11 +30,13 @@ def define_logger(name:str,log_file:str=None)->logging.Logger:
     console_formatter = logging.Formatter(
         '%(levelname)s - %(message)s'
     )
+    
     #add formatters to handlers
     #file formatter
     file_handler.setFormatter(file_formatter)
     #console formatter
     console_handler.setFormatter(console_formatter)
+
     #add handlers to the logger
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
@@ -50,8 +55,6 @@ def define_logger(name:str,log_file:str=None)->logging.Logger:
         
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
-
-    #return the logger object
-    
+            
     return logger
 

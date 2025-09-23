@@ -5,17 +5,15 @@ from logging.handlers import RotatingFileHandler
 
 def define_logger(name:str,log_file:str=None)->logging.Logger:
 
-    """
-        log handler for console and file logs
-    """
-    
+    # log handler for console and file logs
+
     # create the logger
     logger=logging.getLogger(name)
     #set the logger level
     logger.setLevel(logging.INFO)
     #Create  file handler and set level
     file_handler=logging.FileHandler(log_file)
-    file_handler.setLevel()
+    file_handler.setLevel(logging.INFO)
     #create console handler and set level
     console_handler=logging.StreamHandler()
     console_handler.setLevel(logging.INFO)

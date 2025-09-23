@@ -6,18 +6,13 @@ from database.database import get_session
 import pandas as pd
 from io import BytesIO
 from schemas.dmasa_schema import dma_check_status,dma_credits,ReadOutput
-
 from utils.dma_logger import define_logger
 
 dma_routes=APIRouter(tags=['DMA ROUTES'],prefix='/dma')
 
-dma_logger=define_logger("dma_service logs","dma/serivce log")
-
-#logger = setup_logger("ping_crud", "logs/ping_crud.log")
-
+dma_logger=define_logger("dma_service_routes","logs/dmasa_routes.log")
 
 @dma_routes.get("/check-credits",status_code=status.HTTP_200_OK,description="Run this endpoint to get the dmasa credits remaining",response_model=dma_credits)
-
 async def check_credits(credits_check:DMA_Class=Depends(get_dmasa_service_class)):
    
     try:
@@ -50,10 +45,8 @@ async def check_credits(credits_check:DMA_Class=Depends(get_dmasa_service_class)
         dma_logger.critical(f"internal server error,line 50:{e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="internal server error")
 
-
 #you will need to open a database session
 @dma_routes.post("/upload-data",status_code=status.HTTP_201_CREATED,description="upload data to the dmasa api",response_model=dma_audit_id_table)
-
 async def upload_data_for_dma(notification_email:str=Query(description="Please provide notification email for dedupes"),upload_dma:DMA_Class=Depends(get_dmasa_service_class),data_file:UploadFile=File(...,description="Provide a file with data to be uploaded to the dmasa api"),session:Session=Depends(get_session)):
     #extract data from the csv file store that mf on a data structure
     try:
@@ -62,7 +55,6 @@ async def upload_data_for_dma(notification_email:str=Query(description="Please p
             dma_logger.error(f'Incorrect file type read:{data_file.filename}')
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid file format")
         #check if the file has ids, cellphone numbers or both
-
         #extract ids and send to dmasa
         if data_file.filename.endswith((".csv")):
             #read file contents into a BytesIO buffer
@@ -110,7 +102,6 @@ async def upload_data_for_dma(notification_email:str=Query(description="Please p
             
             else:
                 dma_logger.critical(f"dmasa status code:{upload_response_ids.status_code},error message:{upload_response_ids.json()['Error']},line 111")
-
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="An internal server occurred on the api")
 
         elif 'cell numbers' in df.columns() or 'cell number' in df.columns():
@@ -144,19 +135,15 @@ async def upload_data_for_dma(notification_email:str=Query(description="Please p
  
     except Exception as e:
         dma_logger.critical(f'dmasa status code:{e},line 146')
-
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=f"An error occurred while processing the file:{e}")
 
 #check status route completed and might need some testing
-
 @dma_routes.get("/dedupe-status/{audit_id}",status_code=status.HTTP_200_OK,description="read the dedupe status by providing the audit id",response_model=dma_check_status)
-
 async def check_dedupe_status(audit_id:str=Path(description="Please provide an audit id for uploaded dma records"),session:Session=Depends(get_session),dma_record_status:DMA_Class=Depends(get_dmasa_service_class)):
     #search the database 
     try:
     
         query=select(dma_audit_id_table).where(dma_audit_id_table.audit_id==audit_id)
-
         dma_record=session.exec(query).first()
 
         if dma_record==None:
@@ -188,7 +175,6 @@ async def check_dedupe_status(audit_id:str=Path(description="Please provide an a
 
 #Route completed needs testing
 @dma_routes.get("/read-output/{audit_id}",status_code=status.HTTP_200_OK,description="read the dedupe output from the dmasa api,provide an audit id for the dedupe",response_model=ReadOutput)
-
 async def read_dedupe_output(audit_id:str,session:Session=Depends(get_session),dma_record:DMA_Class=Depends(get_dmasa_service_class)):
     
     #search for the audit id on the database
@@ -235,6 +221,7 @@ async def read_dedupe_output(audit_id:str,session:Session=Depends(get_session),d
         return response_record.json()['Errors']
     
     else:
-
+        
         dma_logger.critical(f"internal server error,line 235")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="An internal server error occurred")
+
